@@ -10,7 +10,8 @@ import java.net.http.HttpResponse.BodyHandlers;
 public class Cliente {
 
 	public static void main(String[] args) {
-		String url = "192.168.1.46:8080/prueba";
+		String ip = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+		String url = String.format("http://%s:8080/prueba", ip);
 		String contenido = "";
 		HttpClient cliente = HttpClient.newHttpClient();
 		HttpRequest peticion;
