@@ -10,7 +10,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 public class Cliente {
 
 	public static void main(String[] args) {
-		String url = "localhost:8080/prueba";
+		String url = "192.168.1.46:8080/prueba";
 		String contenido = "";
 		HttpClient cliente = HttpClient.newHttpClient();
 		HttpRequest peticion;
