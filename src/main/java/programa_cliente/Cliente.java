@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "10.1.192.154"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static HttpClient cliente = HttpClient.newHttpClient();
 	static HttpRequest peticion;
@@ -67,7 +67,7 @@ public class Cliente {
 			peticion = HttpRequest.newBuilder().uri(URI.create(url)).build();
 			respuesta = cliente.send(peticion, BodyHandlers.ofString());
 			contenido = respuesta.body();
-//			 System.out.println(contenido);
+//			System.out.println(contenido);
 		} catch (ConnectException e) { // si hay error de conexión
 			System.out.println("ERROR DE CONEXIÓN. Intenta entrar más tarde");
 			System.exit(-1);
@@ -84,7 +84,7 @@ public class Cliente {
 	private static void conexion() {
 		// Llama al método conexión del servidor
 		String url = String.format("http://%s:%s/conexion", IP, PUERTO);
-		endPoint(url);
+		System.out.println(endPoint(url));
 	}
 
 }
