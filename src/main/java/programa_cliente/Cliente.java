@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.56.1"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static HttpClient cliente = HttpClient.newHttpClient();
 	static HttpRequest peticion;
@@ -93,8 +93,8 @@ public class Cliente {
 	}
 
 	/**
-	 * Método para crear la partida que muestre el id de la partida y las cartas,
-	 * recibidas por el servidor
+	 * Método para crear la partida que muestre el id de usuario correspondiente,
+	 * las cartas recibidas por el servidor y el id de la partida
 	 */
 	private static void crearPartida() {
 		System.out.print("Introduce el nombre de jugador: ");
@@ -104,12 +104,12 @@ public class Cliente {
 		// con el id y las cartas, separados por comas que dividimos
 		// a un array para guardarlo en variables que se utilizarán después
 		String respuesta = endPoint(url);
-		System.out.println("RESPUESTA SERVER -> " + respuesta);
+		System.out.println();
 		String[] partes = respuesta.split(",");
 
 		id = Integer.parseInt(partes[0]);
-		System.out.println("El ID de la partida es: " + id);
-		// repartirCartas(partes);
+		System.out.println("El ID de la partida es: " + partes[partes.length - 1]);
+		repartirCartas(partes);
 	}
 
 	private static void repartirCartas(String[] partes) {
@@ -120,8 +120,9 @@ public class Cliente {
 		cartas.add(partes[3]);
 		cartas.add(partes[4]);
 		cartas.add(partes[5]);
+		cartas.sort(null); // Ordenamos el ArrayList por defecto
 
-		System.out.println("\nTus cartas son: ");
+		System.out.println("Tus cartas son: ");
 		for (String string : cartas) {
 			System.out.print(string + " ");
 
