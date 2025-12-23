@@ -7,21 +7,27 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "10.1.192.154"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static HttpClient cliente = HttpClient.newHttpClient();
 	static HttpRequest peticion;
 	static HttpResponse<String> respuesta = null;
 	static Scanner sc = new Scanner(System.in);
+	static String nombre;
+	static int id;
+	static ArrayList<String> cartas;
 
 	public static void main(String[] args) {
 		System.out.println("Comprobando conexión...");
 		conexion();
 		int opcion = 0;
+		System.out.println(); // Salto línea
 		System.out.println("Bienvenido al juego del mentiroso!");
 		while (opcion != 3) {
 			try {
@@ -37,16 +43,14 @@ public class Cliente {
 				System.out.println(); // salto línea
 			}
 		}
-//		String url = String.format("http://%s:%s/prueba", IP, PUERTO);
-//		endPoint(url);
-
 	}
 
 	private static void opciones(int opcion) {
+		System.out.println(); // Salto línea
 		if (opcion == 1) {
-			
+			crearPartida();
 		} else if (opcion == 2) {
-
+			unirPartida();
 		} else {
 
 		}
@@ -80,6 +84,7 @@ public class Cliente {
 		}
 		return contenido;
 	}
+
 	// Método que hace una primera llamada para comprobar la conexión
 	private static void conexion() {
 		// Llama al método conexión del servidor
@@ -87,4 +92,90 @@ public class Cliente {
 		System.out.println(endPoint(url));
 	}
 
+	/**
+	 * Método para crear la partida que muestre el id de usuario correspondiente,
+	 * las cartas recibidas por el servidor y el id de la partida
+	 */
+	private static void crearPartida() {
+		System.out.print("Introduce el nombre de jugador: ");
+		nombre = sc.nextLine();
+		String url = String.format("http://%s:%s/crearPartida/%s", IP, PUERTO, nombre);
+		String respuesta = endPoint(url);
+		// CAMBIOS AQUÍ: se divide con : para que podamos reutilizar siempre el método de repartirCartas más adelante
+		// De tal forma que, todo lo que vaya después de los : van a ser cartas (aunque después haya más cosas).
+		// Ejemplo de respuesta justo abajo (descomentar el syso y probad a crear partida)
+//		System.out.println(respuesta); // PRUEBA ------------------------------------------------
+		System.out.println(); // Salto línea
+		String[] partes = respuesta.split(":");
+		id = Integer.parseInt(partes[0]);
+		String[] cartasMasId = partes[1].split(",");
+		System.out.println("El ID de la partida es: " + cartasMasId[cartasMasId.length - 1]);
+		repartirCartas(cartasMasId);
+	}
+
+	private static void repartirCartas(String[] partes) {
+		cartas = new ArrayList<String>();
+
+		cartas.add(partes[0]);
+		cartas.add(partes[1]);
+		cartas.add(partes[2]);
+		cartas.add(partes[3]);
+		cartas.add(partes[4]);
+		cartas.sort(null); // Ordenamos el ArrayList por defecto
+
+		System.out.println("Tus cartas son: ");
+		for (String string : cartas) {
+			System.out.print(string + " ");
+
+		}
+		// Salto línea doble
+		System.out.println();
+		System.out.println();
+	}
+
+	/**
+	 * Método para unirse a una partida con el nombre del jugador y el id de la
+	 * partida. Recibe los nombres y las cartas del jugador
+	 */
+	private static void unirPartida() {
+		System.out.println("Introduce el nombre de jugador: ");
+		nombre = sc.nextLine();
+		System.out.println("Introduce el id de la partida: ");
+		// EXCEPCIÓN DE ENTRADA
+		boolean entradaCorrecta = false;
+		while (!entradaCorrecta) {
+			try {
+				id = Integer.parseInt(sc.nextLine());
+				entradaCorrecta = true;
+			} catch (NumberFormatException e) {
+				System.out.println("Introduce un número por favor");
+			}
+		}
+		System.out.println(); // Salto línea
+		System.out.println("Buscando partida...");
+		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, id);
+		String respuesta = endPoint(url);
+//		System.out.println(respuesta); //PRUEBA --------------------------------------------------------------
+		if (respuesta.equals("-1"))
+			System.out.println("Partida no encontrada. Verifique el ID");
+		else if (respuesta.equals("-2"))
+			System.out.println("Ronda 1 de partida superada. No puedes acceder a la partida");
+		else if (respuesta.equals("-3"))
+			System.out.println("No puedes unirte a la partida. Partida completa de jugadores");
+		else {
+			// El servidor devolvera una cadena con los nombres de los jugadores actuales y
+			// las cartas del jugador, siendo divididos por un ":"
+			String[] partes = respuesta.split(":");
+			System.out.println(); // Salto línea
+//			System.out.println(Arrays.toString(partes)); // PRUEBAA ---------------------------------------------------------
+			String[] nombres = partes[0].split(",");
+			System.out.println("Número de jugadores: " + nombres.length);
+			String[] cartas = partes[1].split(",");
+			for (int i = 0; i < nombres.length; i++) {
+				System.out.println((i + 1) + ". " + nombres[i]);
+			}
+			System.out.println(); // Salto de línea
+			repartirCartas(cartas);
+		}
+	}
 }
