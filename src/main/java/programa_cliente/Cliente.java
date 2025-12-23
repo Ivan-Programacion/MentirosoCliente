@@ -15,6 +15,7 @@ public class Cliente {
 
 	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
+	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
 	static HttpRequest peticion;
 	static HttpResponse<String> respuesta = null;
@@ -101,16 +102,69 @@ public class Cliente {
 		nombre = sc.nextLine();
 		String url = String.format("http://%s:%s/crearPartida/%s", IP, PUERTO, nombre);
 		String respuesta = endPoint(url);
-		// CAMBIOS AQUÍ: se divide con : para que podamos reutilizar siempre el método de repartirCartas más adelante
-		// De tal forma que, todo lo que vaya después de los : van a ser cartas (aunque después haya más cosas).
-		// Ejemplo de respuesta justo abajo (descomentar el syso y probad a crear partida)
+		// CAMBIOS AQUÍ: se divide con : para que podamos reutilizar siempre el método
+		// de repartirCartas más adelante
+		// De tal forma que, todo lo que vaya después de los : van a ser cartas (aunque
+		// después haya más cosas).
+		// Ejemplo de respuesta justo abajo (descomentar el syso y probad a crear
+		// partida)
 //		System.out.println(respuesta); // PRUEBA ------------------------------------------------
 		System.out.println(); // Salto línea
 		String[] partes = respuesta.split(":");
 		id = Integer.parseInt(partes[0]);
 		String[] cartasMasId = partes[1].split(",");
-		System.out.println("El ID de la partida es: " + cartasMasId[cartasMasId.length - 1]);
+		ID_PARTIDA = Integer.parseInt(cartasMasId[cartasMasId.length - 1]);
+		System.out.println("El ID de la partida es: " + ID_PARTIDA);
 		repartirCartas(cartasMasId);
+		comprobarTurno();
+	}
+
+	private static void comprobarTurno() {
+		System.out.println("Entrando en partida");
+		boolean estado = true;
+		while (estado) {
+			String url = String.format("http://%s:%s/comprobarTurno/%d/%d", IP, PUERTO, id, ID_PARTIDA);
+			String respuesta = endPoint(url);
+			System.out.println(respuesta); // PRUEBA ----------------------------------------------------
+			if (respuesta != null) {
+				String[] partes = respuesta.split(":");
+				if (partes[0].equals("0")) {
+				String[] comprobacionTurno = partes[1].split(",");
+				int rondas = Integer.parseInt(comprobacionTurno[1]);
+					if (comprobacionTurno[0].equals("1") && rondas > 1) {
+						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
+						estado = false;
+					} else {
+						System.out.println("Es tu turno");
+						System.out.println("Tus cartas son: ");
+						for (String string : cartas) {
+							System.out.print(string + " ");
+						}
+						// QUITAR ESTE SLEEP DESPUES
+						try {
+							Thread.sleep(30000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				} else {
+					System.out.println("Turno de " + partes[1]);
+					System.out.println("Esperando turno...");
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				System.out.println("Error: Jugador actual no encontrado");
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private static void repartirCartas(String[] partes) {
@@ -145,7 +199,7 @@ public class Cliente {
 		boolean entradaCorrecta = false;
 		while (!entradaCorrecta) {
 			try {
-				id = Integer.parseInt(sc.nextLine());
+				ID_PARTIDA = Integer.parseInt(sc.nextLine());
 				entradaCorrecta = true;
 			} catch (NumberFormatException e) {
 				System.out.println("Introduce un número por favor");
@@ -153,7 +207,7 @@ public class Cliente {
 		}
 		System.out.println(); // Salto línea
 		System.out.println("Buscando partida...");
-		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, id);
+		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, ID_PARTIDA);
 		String respuesta = endPoint(url);
 //		System.out.println(respuesta); //PRUEBA --------------------------------------------------------------
 		if (respuesta.equals("-1"))
@@ -176,6 +230,7 @@ public class Cliente {
 			}
 			System.out.println(); // Salto de línea
 			repartirCartas(cartas);
+			comprobarTurno();
 		}
 	}
 }
