@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.0.15"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -125,25 +125,33 @@ public class Cliente {
 		while (estado) {
 			String url = String.format("http://%s:%s/comprobarTurno/%d/%d", IP, PUERTO, id, ID_PARTIDA);
 			String respuesta = endPoint(url);
-			
+			System.out.println(respuesta); // PRUEBA ----------------------------------------------------
 			if (respuesta != null) {
 				String[] partes = respuesta.split(":");
-
 				if (partes[0].equals("0")) {
-					if (partes[1].equals("1")) {
-						System.out.println("Has ganado");
+				String[] comprobacionTurno = partes[1].split(",");
+				int rondas = Integer.parseInt(comprobacionTurno[1]);
+					if (comprobacionTurno[0].equals("1") && rondas > 1) {
+						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
+						estado = false;
 					} else {
 						System.out.println("Es tu turno");
 						System.out.println("Tus cartas son: ");
 						for (String string : cartas) {
 							System.out.print(string + " ");
 						}
+						// QUITAR ESTE SLEEP DESPUES
+						try {
+							Thread.sleep(30000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				} else {
-					System.out.println("Turno de " + respuesta);
-					System.out.println("Esperando turno");
+					System.out.println("Turno de " + partes[1]);
+					System.out.println("Esperando turno...");
 					try {
-						Thread.sleep(3000);
+						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -191,7 +199,7 @@ public class Cliente {
 		boolean entradaCorrecta = false;
 		while (!entradaCorrecta) {
 			try {
-				id = Integer.parseInt(sc.nextLine());
+				ID_PARTIDA = Integer.parseInt(sc.nextLine());
 				entradaCorrecta = true;
 			} catch (NumberFormatException e) {
 				System.out.println("Introduce un número por favor");
@@ -199,7 +207,7 @@ public class Cliente {
 		}
 		System.out.println(); // Salto línea
 		System.out.println("Buscando partida...");
-		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, id);
+		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, ID_PARTIDA);
 		String respuesta = endPoint(url);
 //		System.out.println(respuesta); //PRUEBA --------------------------------------------------------------
 		if (respuesta.equals("-1"))
@@ -222,6 +230,7 @@ public class Cliente {
 			}
 			System.out.println(); // Salto de línea
 			repartirCartas(cartas);
+			comprobarTurno();
 		}
 	}
 }
