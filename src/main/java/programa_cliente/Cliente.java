@@ -9,11 +9,12 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.40"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -129,8 +130,8 @@ public class Cliente {
 			if (respuesta != null) {
 				String[] partes = respuesta.split(":");
 				if (partes[0].equals("0")) {
-				String[] comprobacionTurno = partes[1].split(",");
-				int rondas = Integer.parseInt(comprobacionTurno[1]);
+					String[] comprobacionTurno = partes[1].split(",");
+					int rondas = Integer.parseInt(comprobacionTurno[1]);
 					if (comprobacionTurno[0].equals("1") && rondas > 1) {
 						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
 						estado = false;
@@ -139,6 +140,7 @@ public class Cliente {
 						System.out.println("Tus cartas son: ");
 						for (String string : cartas) {
 							System.out.print(string + " ");
+							jugar();
 						}
 						// QUITAR ESTE SLEEP DESPUES
 						try {
@@ -165,6 +167,112 @@ public class Cliente {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Método que almacena el tipo de jugada, los valores de las cartas. En caso de
+	 * que decida jugar con sus cartas se mandarán los valores en un String separado
+	 * por comas que se gestionará en el servidor y en caso contrario se mandará una
+	 * declaración de si es mentiroso o no el anterior, que se gestionará tambien en
+	 * el servidor. Pendiente de optimización y de comprobación de inputs
+	 */
+	private static void jugar() {
+
+		ArrayList<String> valores = new ArrayList();
+
+		System.out.println("");
+		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Una carta " + "\n2. Una pareja "
+				+ "\n3. Dos parejas " + "\n4. Trio " + "\n5. Full house " + "\n6. Poker \n7. Declarar mentiroso");
+		int seleccionJugada = sc.nextInt();
+		String tipo = "";
+
+		sc.nextLine();
+		switch (seleccionJugada) {
+		case 1:
+			tipo = "Unacarta";
+			System.out.println("Introduce el valor de tu carta: ");
+			valores.add(sc.nextLine());
+			break;
+		case 2:
+			tipo = "Unapareja";
+			System.out.println("Introduce el primer valor: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor: ");
+			valores.add(sc.nextLine());
+			break;
+		case 3:
+			tipo = "Dosparejas";
+			System.out.println("Introduce el primer valor de la primera pareja: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor de la primera pareja: ");
+			valores.add(sc.nextLine());
+
+			System.out.println("Introduce el primer valor de la segunda pareja: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor de la segunda pareja: ");
+			valores.add(sc.nextLine());
+			break;
+		case 4:
+			tipo = "Trío";
+			System.out.println("Introduce el primer valor: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el tercer valor: ");
+			valores.add(sc.nextLine());
+			break;
+		case 5:
+			tipo = "Fullhouse";
+			System.out.println("Introduce el primer valor de la pareja: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor de la pareja: ");
+			valores.add(sc.nextLine());
+
+			System.out.println("Introduce el primer valor del trío: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor del trío: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el tercer valor del trío: ");
+			valores.add(sc.nextLine());
+			break;
+		case 6:
+			tipo = "Poker";
+			System.out.println("Introduce el primer valor: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el segundo valor: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el tercer valor: ");
+			valores.add(sc.nextLine());
+			System.out.println("Introduce el cuarto valor: ");
+			valores.add(sc.nextLine());
+			break;
+
+		case 7:
+			tipo = "Declararmentiroso";
+			System.out.println("¿El jugador es mentiroso o no: ?");
+			valores.add("Mentiroso");
+			break;
+		}
+
+		String valoresComas = "";
+
+		if (valores.size() != 1) {
+			for (int i = 0; i < valores.size(); i++) {
+
+				if (i != valores.size() - 1) {
+					valoresComas += valores.get(i) + ",";
+				} else {
+					valoresComas += valores.get(i);
+				}
+			}
+		} else {
+			valoresComas = valores.get(0);
+		}
+
+		System.out.println(valoresComas);
+
+		String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo, valoresComas);
+		System.out.println(endPoint(url));
 	}
 
 	private static void repartirCartas(String[] partes) {
@@ -205,6 +313,7 @@ public class Cliente {
 				System.out.println("Introduce un número por favor");
 			}
 		}
+
 		System.out.println(); // Salto línea
 		System.out.println("Buscando partida...");
 		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, ID_PARTIDA);
