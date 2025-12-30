@@ -136,24 +136,23 @@ public class Cliente {
 						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
 						estado = false;
 					} else {
+						// En este split añadimos: nombreJugadorAnterior,tipoJugada,valoresJugada
+						String[] datosJugadaAnterior = partes[2].split(",");
 						System.out.println("Es tu turno");
+						if (!datosJugadaAnterior[0].equals(" "))
+							System.out.println("Jugada de " + datosJugadaAnterior[0] + ": " + datosJugadaAnterior[1]
+									+ " -> " + datosJugadaAnterior[2]);
 						System.out.println("Tus cartas son: ");
 						for (String string : cartas) {
 							System.out.print(string + " ");
 						}
 						jugar();
-//						// QUITAR ESTE SLEEP DESPUES
-//						try {
-//							Thread.sleep(30000);
-//						} catch (InterruptedException e) {
-//							e.printStackTrace();
-//						}
 					}
 				} else {
 					System.out.println("Turno de " + partes[1]);
 					System.out.println("Esperando turno...");
 					try {
-						Thread.sleep(10000);
+						Thread.sleep(30000); // CAMBIAR A 10 SEC --------------------------------------
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -189,19 +188,19 @@ public class Cliente {
 		sc.nextLine();
 		switch (seleccionJugada) {
 		case 1:
-			tipo = "Unacarta";
+			tipo = "Carta alta";
 			System.out.println("Introduce el valor de tu carta: ");
 			valores.add(sc.nextLine());
 			break;
 		case 2:
-			tipo = "Unapareja";
+			tipo = "Pareja";
 			System.out.println("Introduce el primer valor: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor: ");
 			valores.add(sc.nextLine());
 			break;
 		case 3:
-			tipo = "Dosparejas";
+			tipo = "Doble pareja";
 			System.out.println("Introduce el primer valor de la primera pareja: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor de la primera pareja: ");
@@ -213,7 +212,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 4:
-			tipo = "Trio";
+			tipo = "Trío";
 			System.out.println("Introduce el primer valor: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor: ");
@@ -222,7 +221,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 5:
-			tipo = "Fullhouse";
+			tipo = "Full House";
 			System.out.println("Introduce el primer valor de la pareja: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor de la pareja: ");
@@ -236,7 +235,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 6:
-			tipo = "Poker";
+			tipo = "Póker";
 			System.out.println("Introduce el primer valor: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor: ");
@@ -250,7 +249,7 @@ public class Cliente {
 		case 7:
 			tipo = "Declararmentiroso";
 			System.out.println("¿El jugador es mentiroso o no: ?");
-			valores.add("Mentiroso");
+//			valores.add("Mentiroso");
 			break;
 		}
 
@@ -284,15 +283,7 @@ public class Cliente {
 		cartas.add(partes[3]);
 		cartas.add(partes[4]);
 		cartas.sort(null); // Ordenamos el ArrayList por defecto
-
-		System.out.println("Tus cartas son: ");
-		for (String string : cartas) {
-			System.out.print(string + " ");
-
-		}
-		// Salto línea doble
-		System.out.println();
-		System.out.println();
+		System.out.println(); // salto línea
 	}
 
 	/**
@@ -338,7 +329,6 @@ public class Cliente {
 			for (int i = 0; i < nombres.length; i++) {
 				System.out.println((i + 1) + ". " + nombres[i]);
 			}
-			System.out.println(); // Salto de línea
 			repartirCartas(cartas);
 			comprobarTurno();
 		}
