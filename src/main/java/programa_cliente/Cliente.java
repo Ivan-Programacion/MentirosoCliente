@@ -8,13 +8,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.40"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -124,9 +122,11 @@ public class Cliente {
 		System.out.println("Entrando en partida");
 		boolean estado = true;
 		while (estado) {
+//			System.err.println("IMPRIMIENDO ID: " + id); // PRUEBA --------------------------------------
 			String url = String.format("http://%s:%s/comprobarTurno/%d/%d", IP, PUERTO, id, ID_PARTIDA);
 			String respuesta = endPoint(url);
-			System.out.println(respuesta); // PRUEBA ----------------------------------------------------
+//			System.out.println(respuesta); // PRUEBA ----------------------------------------------------
+			System.out.println(); // salto línea
 			if (respuesta != null) {
 				String[] partes = respuesta.split(":");
 				if (partes[0].equals("0")) {
@@ -136,24 +136,23 @@ public class Cliente {
 						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
 						estado = false;
 					} else {
+						// En este split añadimos: nombreJugadorAnterior,tipoJugada,valoresJugada
+						String[] datosJugadaAnterior = partes[2].split(",");
 						System.out.println("Es tu turno");
+						if (!datosJugadaAnterior[0].equals(" "))
+							System.out.println("Jugada de " + datosJugadaAnterior[0] + ": " + datosJugadaAnterior[1]
+									+ " -> " + datosJugadaAnterior[2]);
 						System.out.println("Tus cartas son: ");
 						for (String string : cartas) {
 							System.out.print(string + " ");
-							jugar();
 						}
-						// QUITAR ESTE SLEEP DESPUES
-						try {
-							Thread.sleep(30000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+						jugar();
 					}
 				} else {
 					System.out.println("Turno de " + partes[1]);
 					System.out.println("Esperando turno...");
 					try {
-						Thread.sleep(10000);
+						Thread.sleep(30000); // CAMBIAR A 10 SEC --------------------------------------
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -178,30 +177,30 @@ public class Cliente {
 	 */
 	private static void jugar() {
 
-		ArrayList<String> valores = new ArrayList();
+		ArrayList<String> valores = new ArrayList<>();
 
 		System.out.println("");
-		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Una carta " + "\n2. Una pareja "
-				+ "\n3. Dos parejas " + "\n4. Trio " + "\n5. Full house " + "\n6. Poker \n7. Declarar mentiroso");
+		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
+				+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker \n7. Declarar mentiroso");
 		int seleccionJugada = sc.nextInt();
 		String tipo = "";
 
 		sc.nextLine();
 		switch (seleccionJugada) {
 		case 1:
-			tipo = "Unacarta";
+			tipo = "Carta_alta";
 			System.out.println("Introduce el valor de tu carta: ");
 			valores.add(sc.nextLine());
 			break;
 		case 2:
-			tipo = "Unapareja";
+			tipo = "Pareja";
 			System.out.println("Introduce el primer valor: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor: ");
 			valores.add(sc.nextLine());
 			break;
 		case 3:
-			tipo = "Dosparejas";
+			tipo = "Doble_pareja";
 			System.out.println("Introduce el primer valor de la primera pareja: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor de la primera pareja: ");
@@ -222,7 +221,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 5:
-			tipo = "Fullhouse";
+			tipo = "Full_House";
 			System.out.println("Introduce el primer valor de la pareja: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor de la pareja: ");
@@ -236,7 +235,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 6:
-			tipo = "Poker";
+			tipo = "Póker";
 			System.out.println("Introduce el primer valor: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor: ");
@@ -250,7 +249,7 @@ public class Cliente {
 		case 7:
 			tipo = "Declararmentiroso";
 			System.out.println("¿El jugador es mentiroso o no: ?");
-			valores.add("Mentiroso");
+//			valores.add("Mentiroso");
 			break;
 		}
 
@@ -284,15 +283,7 @@ public class Cliente {
 		cartas.add(partes[3]);
 		cartas.add(partes[4]);
 		cartas.sort(null); // Ordenamos el ArrayList por defecto
-
-		System.out.println("Tus cartas son: ");
-		for (String string : cartas) {
-			System.out.print(string + " ");
-
-		}
-		// Salto línea doble
-		System.out.println();
-		System.out.println();
+		System.out.println(); // salto línea
 	}
 
 	/**
@@ -334,10 +325,10 @@ public class Cliente {
 			String[] nombres = partes[0].split(",");
 			System.out.println("Número de jugadores: " + nombres.length);
 			String[] cartas = partes[1].split(",");
+			id = Integer.parseInt(partes[2]); // Añadimos el ID al jugador
 			for (int i = 0; i < nombres.length; i++) {
 				System.out.println((i + 1) + ". " + nombres[i]);
 			}
-			System.out.println(); // Salto de línea
 			repartirCartas(cartas);
 			comprobarTurno();
 		}
