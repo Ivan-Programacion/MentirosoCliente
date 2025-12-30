@@ -188,7 +188,7 @@ public class Cliente {
 		sc.nextLine();
 		switch (seleccionJugada) {
 		case 1:
-			tipo = "Carta alta";
+			tipo = "Carta_alta";
 			System.out.println("Introduce el valor de tu carta: ");
 			valores.add(sc.nextLine());
 			break;
@@ -200,7 +200,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 3:
-			tipo = "Doble pareja";
+			tipo = "Doble_pareja";
 			System.out.println("Introduce el primer valor de la primera pareja: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor de la primera pareja: ");
@@ -221,7 +221,7 @@ public class Cliente {
 			valores.add(sc.nextLine());
 			break;
 		case 5:
-			tipo = "Full House";
+			tipo = "Full_House";
 			System.out.println("Introduce el primer valor de la pareja: ");
 			valores.add(sc.nextLine());
 			System.out.println("Introduce el segundo valor de la pareja: ");
