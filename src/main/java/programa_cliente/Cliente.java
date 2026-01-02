@@ -129,13 +129,15 @@ public class Cliente {
 			System.out.println(); // salto línea
 			if (respuesta != null) {
 				String[] partes = respuesta.split(":");
+				int rondas = 0;
 				if (partes[0].equals("0")) {
 					String[] comprobacionTurno = partes[1].split(",");
-					int rondas = Integer.parseInt(comprobacionTurno[1]);
+					rondas = Integer.parseInt(comprobacionTurno[1]);
 					if (comprobacionTurno[0].equals("1") && rondas > 1) {
 						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
 						estado = false;
 					} else {
+						rondas = Integer.parseInt(comprobacionTurno[1]);
 						// En este split añadimos: nombreJugadorAnterior,tipoJugada,valoresJugada
 						String[] datosJugadaAnterior = partes[2].split(",");
 						System.out.println("Es tu turno");
@@ -146,7 +148,7 @@ public class Cliente {
 						for (String string : cartas) {
 							System.out.print(string + " ");
 						}
-						jugar();
+						estado = jugar(rondas);
 					}
 				} else {
 					System.out.println("Turno de " + partes[1]);
@@ -174,14 +176,22 @@ public class Cliente {
 	 * por comas que se gestionará en el servidor y en caso contrario se mandará una
 	 * declaración de si es mentiroso o no el anterior, que se gestionará tambien en
 	 * el servidor. Pendiente de optimización y de comprobación de inputs
+	 * 
+	 * @param rondas
 	 */
-	private static void jugar() {
+	private static boolean jugar(int rondas) {
 
 		ArrayList<String> valores = new ArrayList<>();
 		boolean mentiroso = false;
 		System.out.println("");
 		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
-				+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker \n7. Declarar mentiroso");
+				+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker");
+		// Si no es la primera ronda y es el primer jugador, no se le da la opción de
+		// Declarar mentiroso
+		// IMPORTANTE ------------------- UTILIZAR ESTA VARIABLE PARA LAS EXCEPCIONES
+		boolean comprobacion = id != 1 || rondas > 1;
+		if (comprobacion)
+			System.out.println("7. Declarar mentiroso");
 		int seleccionJugada = sc.nextInt();
 		String tipo = "";
 
@@ -250,14 +260,13 @@ public class Cliente {
 			tipo = "Declarar_mentiroso";
 			System.out.println("Comprobando si es mentiroso...");
 			mentiroso = true;
-//			valores.add("Mentiroso");
 			break;
 		}
 		if (!mentiroso) {
 			String valoresComas = "";
 			if (valores.size() != 1) {
 				for (int i = 0; i < valores.size(); i++) {
-					
+
 					if (i != valores.size() - 1) {
 						valoresComas += valores.get(i) + ",";
 					} else {
@@ -268,12 +277,35 @@ public class Cliente {
 				valoresComas = valores.get(0);
 			}
 			System.out.println(valoresComas); // PRUEBA --------------------------------------
-			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo, valoresComas);
+			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
+					valoresComas);
 			System.out.println(endPoint(url));
+			return true; // Se devuelve true para que siga jugando
 		} else {
 			String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
-			System.out.println(endPoint(url));
+			return comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
 		}
+	}
+
+	private static boolean comprobarMentiroso(String respuesta) {
+		boolean comprobacion = true;
+		if (respuesta.equals("-1")) {
+			System.out.println("Error en la partida");
+			System.exit(-1);
+		} else if (respuesta.equals("-2")) {
+			System.out.println("No ha jugado nadie anteriormente");
+		} else if (respuesta.equals("t")) {
+			System.out.println("¡La jugada es VERDADERA!");
+			System.out.println("Has sido eliminado del juego");
+			// Si has fallado, se retorará false para que seas eliminado (salir del bucle de
+			// comprobarTurno)
+			comprobacion = false;
+		} else {
+			System.out.println("¡La jugada es MENTIRA!");
+			System.out.println("Se ha eliminado al jugador");
+		}
+		System.out.println(); // salto línea
+		return comprobacion;
 	}
 
 	private static void repartirCartas(String[] partes) {
