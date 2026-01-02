@@ -178,7 +178,7 @@ public class Cliente {
 	private static void jugar() {
 
 		ArrayList<String> valores = new ArrayList<>();
-
+		boolean mentiroso = false;
 		System.out.println("");
 		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
 				+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker \n7. Declarar mentiroso");
@@ -247,31 +247,33 @@ public class Cliente {
 			break;
 
 		case 7:
-			tipo = "Declararmentiroso";
-			System.out.println("¿El jugador es mentiroso o no: ?");
+			tipo = "Declarar_mentiroso";
+			System.out.println("Comprobando si es mentiroso...");
+			mentiroso = true;
 //			valores.add("Mentiroso");
 			break;
 		}
-
-		String valoresComas = "";
-
-		if (valores.size() != 1) {
-			for (int i = 0; i < valores.size(); i++) {
-
-				if (i != valores.size() - 1) {
-					valoresComas += valores.get(i) + ",";
-				} else {
-					valoresComas += valores.get(i);
+		if (!mentiroso) {
+			String valoresComas = "";
+			if (valores.size() != 1) {
+				for (int i = 0; i < valores.size(); i++) {
+					
+					if (i != valores.size() - 1) {
+						valoresComas += valores.get(i) + ",";
+					} else {
+						valoresComas += valores.get(i);
+					}
 				}
+			} else {
+				valoresComas = valores.get(0);
 			}
+			System.out.println(valoresComas); // PRUEBA --------------------------------------
+			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo, valoresComas);
+			System.out.println(endPoint(url));
 		} else {
-			valoresComas = valores.get(0);
+			String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
+			System.out.println(endPoint(url));
 		}
-
-		System.out.println(valoresComas);
-
-		String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo, valoresComas);
-		System.out.println(endPoint(url));
 	}
 
 	private static void repartirCartas(String[] partes) {
