@@ -8,11 +8,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.153"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -22,6 +23,8 @@ public class Cliente {
 	static String nombre;
 	static int id;
 	static ArrayList<String> cartas;
+	static ArrayList<String> listaCartas = new ArrayList<>(
+			Arrays.asList("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"));
 
 	public static void main(String[] args) {
 		System.out.println("Comprobando conexión...");
@@ -170,6 +173,19 @@ public class Cliente {
 		}
 	}
 
+	// Metodo que pide los valores y comprueba si existen en la baraja o no
+	private static void pedirValores(ArrayList<String> valores, ArrayList<String> listaCartas, String tipo) {
+		System.out.println("Introduce el valor de tu " + tipo + " : ");
+		String respuesta = sc.nextLine();
+		if (listaCartas.contains(respuesta)) {
+			valores.add(respuesta);
+		} else {
+			System.out.println("Cartas inexistentes...");
+			System.out.println("Introduce cartas existentes en la baraja...");
+		}
+
+	}
+
 	/**
 	 * Método que almacena el tipo de jugada, los valores de las cartas. En caso de
 	 * que decida jugar con sus cartas se mandarán los valores en un String separado
@@ -190,77 +206,58 @@ public class Cliente {
 		// Declarar mentiroso
 		// IMPORTANTE ------------------- UTILIZAR ESTA VARIABLE PARA LAS EXCEPCIONES
 		boolean comprobacion = id != 1 || rondas > 1;
-		if (comprobacion)
+		if (comprobacion) {
 			System.out.println("7. Declarar mentiroso");
-		int seleccionJugada = sc.nextInt();
+		}
+		String seleccionJugada = sc.nextLine();
 		String tipo = "";
+		try {
+			int seleccionJugadaNum = Integer.parseInt(seleccionJugada);
 
-		sc.nextLine();
-		switch (seleccionJugada) {
-		case 1:
-			tipo = "Carta_alta";
-			System.out.println("Introduce el valor de tu carta: ");
-			valores.add(sc.nextLine());
-			break;
-		case 2:
-			tipo = "Pareja";
-			System.out.println("Introduce el primer valor: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor: ");
-			valores.add(sc.nextLine());
-			break;
-		case 3:
-			tipo = "Doble_pareja";
-			System.out.println("Introduce el primer valor de la primera pareja: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor de la primera pareja: ");
-			valores.add(sc.nextLine());
+			if (seleccionJugadaNum < 1 || seleccionJugadaNum > 7) {
+				System.out.println("Introduce una opcion correcta");
+			}
+			// Cambio hecho para usar el metodo
+			switch (seleccionJugadaNum) {
+			case 1:
+				tipo = "Carta_alta";
+				pedirValores(valores, listaCartas, "carta alta");
+				break;
+			case 2:
+				tipo = "Pareja";
+				pedirValores(valores, listaCartas, "pareja");
+				break;
+			case 3:
+				tipo = "Doble_pareja";
+				pedirValores(valores, listaCartas, "primera pareja");
+				// llamamos al metodo dos veces ya que se piden dos parejas
+				pedirValores(valores, listaCartas, "segunda pareja");
+				break;
+			case 4:
+				tipo = "Trío";
+				pedirValores(valores, listaCartas, "trio");
+				break;
+			case 5:
+				tipo = "Full_House";
+				System.out.println("Introduce tu pareja");
+				pedirValores(valores, listaCartas, "pareja");
 
-			System.out.println("Introduce el primer valor de la segunda pareja: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor de la segunda pareja: ");
-			valores.add(sc.nextLine());
-			break;
-		case 4:
-			tipo = "Trío";
-			System.out.println("Introduce el primer valor: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el tercer valor: ");
-			valores.add(sc.nextLine());
-			break;
-		case 5:
-			tipo = "Full_House";
-			System.out.println("Introduce el primer valor de la pareja: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor de la pareja: ");
-			valores.add(sc.nextLine());
+				System.out.println("Introduce tu trio");
+				pedirValores(valores, listaCartas, "trio");
+				break;
+			case 6:
+				tipo = "Póker";
+				pedirValores(valores, listaCartas, "póker");
+				break;
 
-			System.out.println("Introduce el primer valor del trío: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor del trío: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el tercer valor del trío: ");
-			valores.add(sc.nextLine());
-			break;
-		case 6:
-			tipo = "Póker";
-			System.out.println("Introduce el primer valor: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el segundo valor: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el tercer valor: ");
-			valores.add(sc.nextLine());
-			System.out.println("Introduce el cuarto valor: ");
-			valores.add(sc.nextLine());
-			break;
-
-		case 7:
-			tipo = "Declarar_mentiroso";
-			System.out.println("Comprobando si es mentiroso...");
-			mentiroso = true;
-			break;
+			case 7:
+				tipo = "Declarar_mentiroso";
+				System.out.println("Comprobando si es mentiroso...");
+				mentiroso = true;
+				break;
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("Introduce un numero correcto");
 		}
 		if (!mentiroso) {
 			String valoresComas = "";
