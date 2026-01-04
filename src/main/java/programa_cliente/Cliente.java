@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "localhost"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -140,7 +140,21 @@ public class Cliente {
 			if (respuesta != null) {
 				String[] partes = respuesta.split(":");
 				int rondas = 0;
+
+				// Estos dos if de aqui estan para la excepcion de indexoutof round algo asi,
+				// porque en algun momento la respuesta no tiene un : entonces partes[1] no
+				// existe y peta 
+				if (partes[0].equals("-2")) {
+					System.out.println("Has sido eliminado dela partida");
+					estado = false;
+					continue;
+				}
+
 				if (partes[0].equals("0")) {
+					if (partes.length < 2) {
+						System.out.println("Respuesta inválida del servidor: " + respuesta);
+						continue;
+					}
 					String[] comprobacionTurno = partes[1].split(",");
 					rondas = Integer.parseInt(comprobacionTurno[1]);
 					if (comprobacionTurno[0].equals("1") && rondas > 1) {
@@ -148,13 +162,18 @@ public class Cliente {
 						estado = false;
 					} else {
 						rondas = Integer.parseInt(comprobacionTurno[1]);
-						// En este split añadimos: nombreJugadorAnterior,tipoJugada,valoresJugada
-						String[] datosJugadaAnterior = partes[2].split(",");
-						System.out.println("Es tu turno");
-						if (!datosJugadaAnterior[0].equals(" "))
-							System.out.println("Jugada de " + datosJugadaAnterior[0] + ": " + datosJugadaAnterior[1]
-									+ " -> " + datosJugadaAnterior[2]);
+						if (partes.length > 2 && partes[2] != null && !partes[2].isEmpty()) {
+							String[] datosJugadaAnterior = partes[2].split(",");
+							if (!datosJugadaAnterior[0].equals(" ") && datosJugadaAnterior.length >= 3) {
+								System.out.println("Jugada de " + datosJugadaAnterior[0] + ": " + datosJugadaAnterior[1]
+										+ " -> " + datosJugadaAnterior[2]);
+							}
+						}
+
+						System.out.println("Es tu turno: ");
 						estado = jugar(rondas);
+						// En este split añadimos: nombreJugadorAnterior,tipoJugada,valoresJugada
+
 					}
 					/*
 					 * Aquí habrá que tener en cuenta lo dicho en el servidor.
