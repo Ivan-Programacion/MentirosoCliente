@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "localhost"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -130,22 +130,15 @@ public class Cliente {
 			String respuesta = endPoint(url);
 //			System.out.println(respuesta); // PRUEBA ----------------------------------------------------
 			System.out.println(); // salto línea
-			System.out.println("Tus cartas son: ");
-			for (String string : cartas) {
-				System.out.print(string + " ");
-			}
-			// Doble salto de línea para que quede bien
-			System.out.println();
-			System.out.println();
 			if (respuesta != null) {
 				String[] partes = respuesta.split(":");
 				int rondas = 0;
 
 				// Estos dos if de aqui estan para la excepcion de indexoutof round algo asi,
 				// porque en algun momento la respuesta no tiene un : entonces partes[1] no
-				// existe y peta 
+				// existe y peta
 				if (partes[0].equals("-2")) {
-					System.out.println("Has sido eliminado dela partida");
+					System.out.println("Has sido eliminado de la partida.");
 					estado = false;
 					continue;
 				}
@@ -159,8 +152,16 @@ public class Cliente {
 					rondas = Integer.parseInt(comprobacionTurno[1]);
 					if (comprobacionTurno[0].equals("1") && rondas > 1) {
 						System.out.println("¡¡HAS GANADO. CACHO MENTIROSO!!");
+						System.out.println(); // salto línea
 						estado = false;
 					} else {
+						System.out.println("Tus cartas son: ");
+						for (String string : cartas) {
+							System.out.print(string + " ");
+						}
+						// Doble salto de línea para que quede bien
+						System.out.println();
+						System.out.println();
 						rondas = Integer.parseInt(comprobacionTurno[1]);
 						if (partes.length > 2 && partes[2] != null && !partes[2].isEmpty()) {
 							String[] datosJugadaAnterior = partes[2].split(",");
@@ -171,13 +172,10 @@ public class Cliente {
 						}
 
 						System.out.println("Es tu turno: ");
-						estado = jugar(rondas);
-						// En este split añadimos: nombreJugadorAnterior,tipoJugada,valoresJugada
+						jugar(rondas);
 
 					}
-					/*
-					 * Aquí habrá que tener en cuenta lo dicho en el servidor.
-					 */
+
 				} else {
 					System.out.println("Turno de " + partes[1]);
 					System.out.println("Esperando turno...");
@@ -278,7 +276,7 @@ public class Cliente {
 				valores.add(respuesta);
 			break;
 		case 6:
-			System.out.println("Introduce el valor de la pareja:");
+			System.out.println("Introduce el valor del póker:");
 			respuesta = sc.nextLine();
 			while (!listaCartas.contains(respuesta)) {
 				System.out.println("Cartas inexistentes...");
@@ -304,7 +302,7 @@ public class Cliente {
 	 * 
 	 * @param rondas
 	 */
-	private static boolean jugar(int rondas) {
+	private static void jugar(int rondas) {
 
 		ArrayList<String> valores = new ArrayList<>();
 		boolean mentiroso = false;
@@ -393,15 +391,16 @@ public class Cliente {
 			System.out.println(valoresComas); // PRUEBA --------------------------------------
 			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
 					valoresComas);
-			System.out.println(endPoint(url));
-			return true; // Se devuelve true para que siga jugando
+			System.out.println(endPoint(url)); // PRUEBA -------------------------------------
+//			return true; // Se devuelve true para que siga jugando
 		} else {
 			String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
-			return comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
+			comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
 		}
 	}
 
 	private static boolean comprobarMentiroso(String respuesta) {
+//		System.err.println("MENSAJE DEL SERVIDOR: " + respuesta); // PRUEBA ------------------
 		boolean comprobacion = true;
 		if (respuesta.equals("-1")) {
 			System.out.println("Error en la partida");
@@ -409,14 +408,14 @@ public class Cliente {
 		} else if (respuesta.equals("-2")) {
 			System.out.println("No ha jugado nadie anteriormente");
 		} else if (respuesta.equals("t")) {
-			System.out.println("¡La jugada es VERDADERA!");
-			System.out.println("Has sido eliminado del juego");
+			System.out.println("¡La jugada es MENTIRA!");
+			System.out.println("Se ha eliminado al jugador");
 			// Si has fallado, se retorará false para que seas eliminado (salir del bucle de
 			// comprobarTurno)
 			comprobacion = false;
 		} else {
-			System.out.println("¡La jugada es MENTIRA!");
-			System.out.println("Se ha eliminado al jugador");
+			System.out.println("¡La jugada es VERDADERA!");
+			System.out.println("Has sido eliminado de la partida");
 		}
 		System.out.println(); // salto línea
 		return comprobacion;
