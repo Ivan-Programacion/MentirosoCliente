@@ -46,6 +46,13 @@ public class Cliente {
 				System.out.println(); // salto línea
 			}
 		}
+		System.out.println("Saliendo del programa...");
+		cerrarRecursos();
+	}
+
+	private static void cerrarRecursos() {
+		sc.close();
+		cliente.close();
 	}
 
 	private static void opciones(int opcion) {
@@ -138,7 +145,7 @@ public class Cliente {
 				// porque en algun momento la respuesta no tiene un : entonces partes[1] no
 				// existe y peta
 				if (partes[0].equals("-2")) {
-					System.out.println("Has sido eliminado de la partida.");
+					System.out.println("Has sido eliminado de la partida, POR MENTIROSO!!");
 					estado = false;
 					continue;
 				}
@@ -388,11 +395,10 @@ public class Cliente {
 			} else {
 				valoresComas = valores.get(0);
 			}
-			System.out.println(valoresComas); // PRUEBA --------------------------------------
+//			System.out.println(valoresComas); // PRUEBA --------------------------------------
 			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
 					valoresComas);
-			System.out.println(endPoint(url)); // PRUEBA -------------------------------------
-//			return true; // Se devuelve true para que siga jugando
+			System.out.println(endPoint(url));
 		} else {
 			String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
 			comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
