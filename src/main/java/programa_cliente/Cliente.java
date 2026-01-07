@@ -187,7 +187,7 @@ public class Cliente {
 					System.out.println("Turno de " + partes[1]);
 					System.out.println("Esperando turno...");
 					try {
-						Thread.sleep(30000); // CAMBIAR A 10 SEC --------------------------------------
+						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
