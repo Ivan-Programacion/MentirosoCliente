@@ -311,22 +311,22 @@ public class Cliente {
 	 */
 	private static void jugar(int rondas) {
 
-		ArrayList<String> valores = new ArrayList<>();
 		boolean mentiroso = false;
-		System.out.println("");
-		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
-				+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker");
-		// Si no es la primera ronda y es el primer jugador, no se le da la opción de
-		// Declarar mentiroso
-		// IMPORTANTE ------------------- UTILIZAR ESTA VARIABLE PARA LAS EXCEPCIONES
-		boolean comprobacion = id != 1 || rondas > 1;
-		if (comprobacion) {
-			System.out.println("7. Declarar mentiroso");
-		}
 		String seleccionJugada = "";
 		String tipo = "";
 		boolean errorDatos = true;
 		while (errorDatos) {
+			ArrayList<String> valores = new ArrayList<>();
+			System.out.println("");
+			System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
+					+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker");
+			// Si no es la primera ronda y es el primer jugador, no se le da la opción de
+			// Declarar mentiroso
+			// IMPORTANTE ------------------- UTILIZAR ESTA VARIABLE PARA LAS EXCEPCIONES
+			boolean comprobacion = id != 1 || rondas > 1;
+			if (comprobacion) {
+				System.out.println("7. Declarar mentiroso");
+			}
 			try {
 				seleccionJugada = sc.nextLine();
 				int seleccionJugadaNum = Integer.parseInt(seleccionJugada);
@@ -380,33 +380,39 @@ public class Cliente {
 						mentiroso = true;
 						break;
 					}
-					errorDatos = false;
+					if (!mentiroso) {
+						String valoresComas = "";
+						if (valores.size() != 1) {
+							for (int i = 0; i < valores.size(); i++) {
+
+								if (i != valores.size() - 1) {
+									valoresComas += valores.get(i) + ",";
+								} else {
+									valoresComas += valores.get(i);
+								}
+							}
+						} else {
+							valoresComas = valores.get(0);
+						}
+//			System.out.println(valoresComas); // PRUEBA --------------------------------------
+						String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
+								valoresComas);
+						String respuestaJugar = endPoint(url);
+						if (respuestaJugar.equals("-4"))
+							System.out.println("Valor menor que la jugada anterior. Ponga una jugada mayor.");
+						else {
+							System.out.println(respuestaJugar);
+							errorDatos = false;
+						}
+					} else {
+						String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
+						comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
+						errorDatos = false;
+					}
 				}
 			} catch (NumberFormatException e) {
 				System.out.println("Introduce un numero correcto");
 			}
-		}
-		if (!mentiroso) {
-			String valoresComas = "";
-			if (valores.size() != 1) {
-				for (int i = 0; i < valores.size(); i++) {
-
-					if (i != valores.size() - 1) {
-						valoresComas += valores.get(i) + ",";
-					} else {
-						valoresComas += valores.get(i);
-					}
-				}
-			} else {
-				valoresComas = valores.get(0);
-			}
-//			System.out.println(valoresComas); // PRUEBA --------------------------------------
-			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
-					valoresComas);
-			System.out.println(endPoint(url));
-		} else {
-			String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
-			comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
 		}
 	}
 
