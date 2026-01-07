@@ -323,63 +323,68 @@ public class Cliente {
 		if (comprobacion) {
 			System.out.println("7. Declarar mentiroso");
 		}
-		String seleccionJugada = sc.nextLine();
+		String seleccionJugada = "";
 		String tipo = "";
-		try {
-			int seleccionJugadaNum = Integer.parseInt(seleccionJugada);
+		boolean errorDatos = true;
+		while (errorDatos) {
+			try {
+				seleccionJugada = sc.nextLine();
+				int seleccionJugadaNum = Integer.parseInt(seleccionJugada);
+				if ((seleccionJugadaNum == 7 && !comprobacion) || (seleccionJugadaNum < 1 || seleccionJugadaNum > 7)) {
+					System.out.println("Introduce una opcion correcta");
+				} else {
+					// Añadimos un número de jugada que le indicará al método qué jugada es
+					// 1 --> carta alta
+					// 2 --> pareja
+					// 4 --> doble pareja
+					// 3 --> trio
+					// 5 --> full
+					// 6 --> póker
+					int jugada = 0;
+					// Cambio hecho para usar el metodo
+					switch (seleccionJugadaNum) {
+					case 1:
+						jugada = 1;
+						tipo = "Carta_alta";
+						pedirValores(valores, listaCartas, "carta alta", jugada);
+						break;
+					case 2:
+						jugada = 2;
+						tipo = "Pareja";
+						pedirValores(valores, listaCartas, "pareja", jugada);
+						break;
+					case 3:
+						jugada = 4;
+						tipo = "Doble_pareja";
+						pedirValores(valores, listaCartas, "primera pareja", jugada);
+						break;
+					case 4:
+						jugada = 3;
+						tipo = "Trío";
+						pedirValores(valores, listaCartas, "trio", jugada);
+						break;
+					case 5:
+						jugada = 5;
+						tipo = "Full_House";
+						pedirValores(valores, listaCartas, "pareja", jugada);
+						break;
+					case 6:
+						jugada = 6;
+						tipo = "Póker";
+						pedirValores(valores, listaCartas, "póker", jugada);
+						break;
 
-			if (seleccionJugadaNum < 1 || seleccionJugadaNum > 7) {
-				System.out.println("Introduce una opcion correcta");
+					case 7:
+						tipo = "Declarar_mentiroso";
+						System.out.println("Comprobando si es mentiroso...");
+						mentiroso = true;
+						break;
+					}
+					errorDatos = false;
+				}
+			} catch (NumberFormatException e) {
+				System.out.println("Introduce un numero correcto");
 			}
-			// Añadimos un número de jugada que le indicará al método qué jugada es
-			// 1 --> carta alta
-			// 2 --> pareja
-			// 4 --> doble pareja
-			// 3 --> trio
-			// 5 --> full
-			// 6 --> póker
-			int jugada = 0;
-			// Cambio hecho para usar el metodo
-			switch (seleccionJugadaNum) {
-			case 1:
-				jugada = 1;
-				tipo = "Carta_alta";
-				pedirValores(valores, listaCartas, "carta alta", jugada);
-				break;
-			case 2:
-				jugada = 2;
-				tipo = "Pareja";
-				pedirValores(valores, listaCartas, "pareja", jugada);
-				break;
-			case 3:
-				jugada = 4;
-				tipo = "Doble_pareja";
-				pedirValores(valores, listaCartas, "primera pareja", jugada);
-				break;
-			case 4:
-				jugada = 3;
-				tipo = "Trío";
-				pedirValores(valores, listaCartas, "trio", jugada);
-				break;
-			case 5:
-				jugada = 5;
-				tipo = "Full_House";
-				pedirValores(valores, listaCartas, "pareja", jugada);
-				break;
-			case 6:
-				jugada = 6;
-				tipo = "Póker";
-				pedirValores(valores, listaCartas, "póker", jugada);
-				break;
-
-			case 7:
-				tipo = "Declarar_mentiroso";
-				System.out.println("Comprobando si es mentiroso...");
-				mentiroso = true;
-				break;
-			}
-		} catch (NumberFormatException e) {
-			System.out.println("Introduce un numero correcto");
 		}
 		if (!mentiroso) {
 			String valoresComas = "";
