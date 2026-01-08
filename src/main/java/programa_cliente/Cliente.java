@@ -3,17 +3,19 @@ package programa_cliente;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "localhost"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -35,6 +37,7 @@ public class Cliente {
 		while (opcion != 3) {
 			try {
 				opcion = menu();
+
 				if (opcion < 1 || opcion > 3) {
 					System.out.println("Escribe un valor correcto");
 					System.out.println(); // salto línea
@@ -194,11 +197,12 @@ public class Cliente {
 				}
 			} else {
 				System.out.println("Error: Jugador actual no encontrado");
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+
+			}
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -238,7 +242,7 @@ public class Cliente {
 				respuesta = sc.nextLine();
 			}
 			for (int i = 0; i < 3; i++)
-				valores.add(respuesta);
+				valores.add(respuesta);			
 			break;
 		case 4:
 			System.out.println("Introduce el valor de la primera pareja:");
@@ -457,6 +461,7 @@ public class Cliente {
 	private static void unirPartida() {
 		System.out.println("Introduce el nombre de jugador: ");
 		nombre = sc.nextLine();
+		String nombreCodificado = URLEncoder.encode(nombre, StandardCharsets.UTF_8);
 		System.out.println("Introduce el id de la partida: ");
 		// EXCEPCIÓN DE ENTRADA
 		boolean entradaCorrecta = false;
@@ -471,7 +476,7 @@ public class Cliente {
 
 		System.out.println(); // Salto línea
 		System.out.println("Buscando partida...");
-		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, ID_PARTIDA);
+		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombreCodificado, ID_PARTIDA);
 		String respuesta = endPoint(url);
 //		System.out.println(respuesta); //PRUEBA --------------------------------------------------------------
 		if (respuesta.equals("-1"))
