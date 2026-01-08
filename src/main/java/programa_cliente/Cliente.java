@@ -3,17 +3,19 @@ package programa_cliente;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class Cliente {
 
-	final static String IP = "192.168.1.46"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
+	final static String IP = "localhost"; // CAMBIAR DEPENDIENDO DE LA RED: cmd -> ipconfig -> ipv4
 	final static String PUERTO = "8080"; // PUERTO POR DEFECTO: 8080
 	static int ID_PARTIDA;
 	static HttpClient cliente = HttpClient.newHttpClient();
@@ -35,6 +37,7 @@ public class Cliente {
 		while (opcion != 3) {
 			try {
 				opcion = menu();
+
 				if (opcion < 1 || opcion > 3) {
 					System.out.println("Escribe un valor correcto");
 					System.out.println(); // salto línea
@@ -187,18 +190,19 @@ public class Cliente {
 					System.out.println("Turno de " + partes[1]);
 					System.out.println("Esperando turno...");
 					try {
-						Thread.sleep(30000); // CAMBIAR A 10 SEC --------------------------------------
+						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
 			} else {
 				System.out.println("Error: Jugador actual no encontrado");
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+
+			}
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -238,7 +242,7 @@ public class Cliente {
 				respuesta = sc.nextLine();
 			}
 			for (int i = 0; i < 3; i++)
-				valores.add(respuesta);
+				valores.add(respuesta);			
 			break;
 		case 4:
 			System.out.println("Introduce el valor de la primera pareja:");
@@ -311,22 +315,22 @@ public class Cliente {
 	 */
 	private static void jugar(int rondas) {
 
-		ArrayList<String> valores = new ArrayList<>();
 		boolean mentiroso = false;
-		System.out.println("");
-		System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
-				+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker");
-		// Si no es la primera ronda y es el primer jugador, no se le da la opción de
-		// Declarar mentiroso
-		// IMPORTANTE ------------------- UTILIZAR ESTA VARIABLE PARA LAS EXCEPCIONES
-		boolean comprobacion = id != 1 || rondas > 1;
-		if (comprobacion) {
-			System.out.println("7. Declarar mentiroso");
-		}
 		String seleccionJugada = "";
 		String tipo = "";
 		boolean errorDatos = true;
 		while (errorDatos) {
+			ArrayList<String> valores = new ArrayList<>();
+			System.out.println("");
+			System.out.println("Selecciona el tipo de jugada que quieres tirar: " + "\n1. Carta alta " + "\n2. Pareja "
+					+ "\n3. Doble pareja " + "\n4. Trío " + "\n5. Full House " + "\n6. Póker");
+			// Si no es la primera ronda y es el primer jugador, no se le da la opción de
+			// Declarar mentiroso
+			// IMPORTANTE ------------------- UTILIZAR ESTA VARIABLE PARA LAS EXCEPCIONES
+			boolean comprobacion = id != 1 || rondas > 1;
+			if (comprobacion) {
+				System.out.println("7. Declarar mentiroso");
+			}
 			try {
 				seleccionJugada = sc.nextLine();
 				int seleccionJugadaNum = Integer.parseInt(seleccionJugada);
@@ -380,33 +384,39 @@ public class Cliente {
 						mentiroso = true;
 						break;
 					}
-					errorDatos = false;
+					if (!mentiroso) {
+						String valoresComas = "";
+						if (valores.size() != 1) {
+							for (int i = 0; i < valores.size(); i++) {
+
+								if (i != valores.size() - 1) {
+									valoresComas += valores.get(i) + ",";
+								} else {
+									valoresComas += valores.get(i);
+								}
+							}
+						} else {
+							valoresComas = valores.get(0);
+						}
+//			System.out.println(valoresComas); // PRUEBA --------------------------------------
+						String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
+								valoresComas);
+						String respuestaJugar = endPoint(url);
+						if (respuestaJugar.equals("-4"))
+							System.out.println("Valor menor que la jugada anterior. Ponga una jugada mayor.");
+						else {
+							System.out.println(respuestaJugar);
+							errorDatos = false;
+						}
+					} else {
+						String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
+						comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
+						errorDatos = false;
+					}
 				}
 			} catch (NumberFormatException e) {
 				System.out.println("Introduce un numero correcto");
 			}
-		}
-		if (!mentiroso) {
-			String valoresComas = "";
-			if (valores.size() != 1) {
-				for (int i = 0; i < valores.size(); i++) {
-
-					if (i != valores.size() - 1) {
-						valoresComas += valores.get(i) + ",";
-					} else {
-						valoresComas += valores.get(i);
-					}
-				}
-			} else {
-				valoresComas = valores.get(0);
-			}
-//			System.out.println(valoresComas); // PRUEBA --------------------------------------
-			String url = String.format("http://%s:%s/jugar/%d/%d/%s/%s", IP, PUERTO, ID_PARTIDA, id, tipo,
-					valoresComas);
-			System.out.println(endPoint(url));
-		} else {
-			String url = String.format("http://%s:%s/mentiroso/%d/%d", IP, PUERTO, ID_PARTIDA, id);
-			comprobarMentiroso(endPoint(url)); // Se devolverá un valor según si ha acertado o no
 		}
 	}
 
@@ -451,6 +461,7 @@ public class Cliente {
 	private static void unirPartida() {
 		System.out.println("Introduce el nombre de jugador: ");
 		nombre = sc.nextLine();
+		String nombreCodificado = URLEncoder.encode(nombre, StandardCharsets.UTF_8);
 		System.out.println("Introduce el id de la partida: ");
 		// EXCEPCIÓN DE ENTRADA
 		boolean entradaCorrecta = false;
@@ -465,7 +476,7 @@ public class Cliente {
 
 		System.out.println(); // Salto línea
 		System.out.println("Buscando partida...");
-		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombre, ID_PARTIDA);
+		String url = String.format("http://%s:%s/unir/%s/%s", IP, PUERTO, nombreCodificado, ID_PARTIDA);
 		String respuesta = endPoint(url);
 //		System.out.println(respuesta); //PRUEBA --------------------------------------------------------------
 		if (respuesta.equals("-1"))
